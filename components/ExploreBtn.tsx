@@ -7,7 +7,6 @@ const ExploreBtn = () => {
         console.log('clicked');
         posthog.capture('explore_events_clicked');
     };
-
     return (
         <button type = "button" id = "explore-btn" className = "mt-10 mx-auto" onClick={handleClick}>
             <a href="#events">

@@ -10,9 +10,13 @@ export async function POST(req: NextRequest){
         const formData = await req.formData();
         
         let event;
+        let tags: unknown;
+        let agenda: unknown;
 
         try {
             event = Object.fromEntries(formData.entries());
+            tags = JSON.parse(formData.get('tags') as string)
+            agenda = JSON.parse(formData.get('agenda') as string)
         } catch (error) {
             return NextResponse.json({message: `Invalid json data format >> ${error}`}, {status: 400})
         }
@@ -22,8 +26,7 @@ export async function POST(req: NextRequest){
 
         if (!file) { return NextResponse.json({message: 'Image file is required'}, {status: 400})}
         
-        let tags = JSON.parse(formData.get('tags') as string)
-        let agenda = JSON.parse(formData.get('agenda') as string)
+
 
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);

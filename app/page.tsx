@@ -13,7 +13,7 @@ export default async function Home() {
   const { events } = await response.json();
   return (
     <section>
-      <h1 className = "text-center leading-tight">The Hub for Every Dev <br /> Event You Can't Miss</h1>
+      <h1 className = "text-center leading-tight">The Hub for Every Dev <br /> Event You Can&apos;t Miss</h1>
       <p className = "text-center mt-5" >Hackathons, meetups, and conferences, all in one place.</p>
       
       <ExploreBtn />

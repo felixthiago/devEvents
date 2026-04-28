@@ -39,11 +39,11 @@ bookingSchema.pre<IBooking>('save', async function (next) {
   try {
     const eventExists = await Event.exists({ _id: this.eventId });
     if (!eventExists) {
-      throw new Error(`Event with ID ${this.eventId} does not exist`);
+      return next(new Error(`Event with ID ${this.eventId} does not exist`));
     }
     next();
   } catch (error) {
-    next(error as Error);
+    next(error as any);
   }
 });
 

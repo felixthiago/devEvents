@@ -13,8 +13,6 @@ interface Props {
 }
 
 const EventCard = ({title, image, slug, location, date, time} : Props) => {
-    console.log(title, image, slug, location, date, time);
-    
     const handleClick = () => {
         posthog.capture('event_card_clicked', {
             event_title: title,
