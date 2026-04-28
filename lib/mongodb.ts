@@ -1,57 +1,51 @@
 import mongoose from 'mongoose';
 
-interface CachedConnection {
-  conn: mongoose.Connection | null;
-  promise: Promise<mongoose.Connection> | null;
-}
+type MongooseCache = {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+};
 
 declare global {
-  var mongooseCache: CachedConnection | undefined;
+  var mongoose: MongooseCache | undefined;
 }
 
-let cached: CachedConnection = global.mongooseCache || { conn: null, promise: null };
+const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!global.mongooseCache) {
-  global.mongooseCache = cached;
+let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+
+if (!global.mongoose) {
+  global.mongoose = cached;
 }
 
-export async function connectToDatabase(): Promise<mongoose.Connection> {
+
+async function connectDB(): Promise<typeof mongoose> {
   if (cached.conn) {
     return cached.conn;
   }
 
-  if (cached.promise) {
-    return cached.promise;
-  }
+  if (!cached.promise) {
+    if (!MONGODB_URI) {
+      throw new Error(
+        'Please define the MONGODB_URI environment variable inside .env.local'
+      );
+    }
+    const options = {
+      bufferCommands: false,
+    };
 
-  const mongoUri = process.env.MONGODB_URI;
-  if (!mongoUri) {
-    throw new Error(
-      'MONGODB_URI environment variable is not defined. ' +
-      'Please set it in your .env.local file.'
-    );
+    cached.promise = mongoose.connect(MONGODB_URI!, options).then((mongoose) => {
+      return mongoose;
+    });
   }
-
-  cached.promise = mongoose.connect(mongoUri, {
-    maxPoolSize: 10,
-    minPoolSize: 5,
-    connectTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
-  });
 
   try {
-    cached.conn = (await cached.promise).connection;
-    return cached.conn;
+    cached.conn = await cached.promise;
   } catch (error) {
     cached.promise = null;
     throw error;
   }
+
+  return cached.conn;
 }
 
-export async function disconnectFromDatabase(): Promise<void> {
-  if (cached.conn) {
-    await mongoose.disconnect();
-    cached.conn = null;
-    cached.promise = null;
-  }
-}
+export default connectDB;
