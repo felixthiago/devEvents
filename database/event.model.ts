@@ -103,7 +103,7 @@ const eventSchema = new Schema<IEvent>(
   { timestamps: true }
 );
 
-eventSchema.pre<IEvent>('save', async function (next) {
+eventSchema.pre<IEvent>('save', async function () {
   if (this.isModified('title') || !this.slug) {
     this.slug = generateSlug(this.title);
   }
@@ -111,7 +111,7 @@ eventSchema.pre<IEvent>('save', async function (next) {
   if (this.isModified('date')) {
     const parsedDate = new Date(this.date);
     if (isNaN(parsedDate.getTime())) {
-      return next(new Error('Invalid date format. Use YYYY-MM-DD'));
+      throw new Error('Invalid date format. Use YYYY-MM-DD');
     }
     this.date = parsedDate.toISOString().split('T')[0];
   }
@@ -119,11 +119,9 @@ eventSchema.pre<IEvent>('save', async function (next) {
   if (this.isModified('time')) {
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
     if (!timeRegex.test(this.time)) {
-      return next(new Error('Invalid time format. Use HH:MM or HH:MM:SS'));
+      throw new Error('Invalid time format. Use HH:MM or HH:MM:SS');
     }
   }
-
-  next();
 });
 
 function generateSlug(title: string): string {
